@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Monitoring System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .date-time {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .box {
+            width: calc(50% - 20px);
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .box h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crop Monitoring System</h1>
+        <div class="date-time" id="date-time"></div>
+        
+        <div class="box" id="temperature-box">
+            <h2>Temperature</h2>
+            <div id="temperature-value"></div>
+        </div>
+        <div class="box" id="humidity-box">
+            <h2>Humidity</h2>
+            <div id="humidity-value"></div>
+        </div>
+        <div class="box" id="soil-moisture-box">
+            <h2>Soil Moisture</h2>
+            <div id="soil-moisture-value"></div>
+        </div>
+        <div class="box" id="uv-index-box">
+            <h2>UV Index</h2>
+            <div id="uv-index-value"></div>
+        </div>
+    </div>
+
+    <script>
+        function fetchData() {
+            fetch('data.xml')
+                .then(response => response.text())
+                .then(xmlData => {
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
+                    displayData(xmlDoc);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        function displayData(xmlDoc) {
+            document.getElementById('temperature-value').textContent = xmlDoc.querySelector('Temperature').textContent;
+            document.getElementById('humidity-value').textContent = xmlDoc.querySelector('Humidity').textContent;
+            document.getElementById('soil-moisture-value').textContent = xmlDoc.querySelector('Soil_Moisture').textContent;
+            document.getElementById('uv-index-value').textContent = xmlDoc.querySelector('UV_Index').textContent;
+        }
+
+        function updateDateTime() {
+            const dateTimeElement = document.getElementById('date-time');
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString('en-US');
+            const formattedTime = currentDate.toLocaleTimeString('en-US');
+            dateTimeElement.textContent = `Current Date: ${formattedDate}, Time: ${formattedTime}`;
+        }
+
+        // Fetch data initially and then refresh every 5 seconds
+        fetchData();
+        setInterval(fetchData, 5000);
+
+        // Update date and time every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
+</body>
+</html>
