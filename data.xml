@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <weather_data>
-    <Temperature>25°C</Temperature>
+    <Temperature>20°C</Temperature>
     <Humidity>65%</Humidity>
     <Soil_Moisture>40%</Soil_Moisture>
-    <UV_Index>3</UV_Index>
+    <UV_Index>5</UV_Index>
 </weather_data>
