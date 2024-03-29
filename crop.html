@@ -75,46 +75,55 @@
         
         <div class="grid-container">
             <div class="box" id="temperature-box">
-                <i class="fas fa-thermometer-half icon"></i>
                 <h2>Temperature</h2>
                 <div class="value" id="temperature-value"></div>
             </div>
             <div class="box" id="humidity-box">
-                <i class="fas fa-tint icon"></i>
                 <h2>Humidity</h2>
                 <div class="value" id="humidity-value"></div>
             </div>
             <div class="box" id="soil-moisture-box">
-                <i class="fas fa-seedling icon"></i>
                 <h2>Soil Moisture</h2>
                 <div class="value" id="soil-moisture-value"></div>
             </div>
             <div class="box" id="uv-index-box">
-                <i class="fas fa-sun icon"></i>
                 <h2>UV Index</h2>
                 <div class="value" id="uv-index-value"></div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script>
         function fetchData() {
-            fetch('data.xml')
-                .then(response => response.text())
-                .then(xmlData => {
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlData, 'text/xml');
-                    displayData(xmlDoc);
+            fetch('data.xlsx')
+                .then(response => response.arrayBuffer())
+                .then(arrayBuffer => {
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+        
+                    // Assuming the latest row contains the updated values
+                    const latestRow = jsonData.length - 1;
+        
+                    // Assuming the values are in the order: temperature, humidity, soil moisture, UV index
+                    const temperature = jsonData[latestRow][0];
+                    const humidity = jsonData[latestRow][1];
+                    const soilMoisture = jsonData[latestRow][2];
+                    const uvIndex = jsonData[latestRow][3];
+        
+                    displayData(temperature, humidity, soilMoisture, uvIndex);
                 })
                 .catch(error => console.error('Error fetching data:', error));
         }
-
-        function displayData(xmlDoc) {
-            document.getElementById('temperature-value').textContent = xmlDoc.querySelector('Temperature').textContent;
-            document.getElementById('humidity-value').textContent = xmlDoc.querySelector('Humidity').textContent;
-            document.getElementById('soil-moisture-value').textContent = xmlDoc.querySelector('Soil_Moisture').textContent;
-            document.getElementById('uv-index-value').textContent = xmlDoc.querySelector('UV_Index').textContent;
-        }
+        
+        function displayData(temperature, humidity, soilMoisture, uvIndex) {
+            document.getElementById('temperature-value').textContent = temperature;
+            document.getElementById('humidity-value').textContent = humidity;
+            document.getElementById('soil-moisture-value').textContent = soilMoisture;
+            document.getElementById('uv-index-value').textContent = uvIndex;
+        }        
 
         function updateDateTime() {
             const dateTimeElement = document.getElementById('date-time');
@@ -124,7 +133,7 @@
             dateTimeElement.textContent = `Current Date: ${formattedDate}, Time: ${formattedTime}`;
         }
 
-        // Fetch data initially and then refresh every 1 second
+        // Fetch data initially and then refresh every 5 seconds
         fetchData();
         setInterval(fetchData, 5000);
 
